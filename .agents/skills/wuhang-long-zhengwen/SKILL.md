@@ -6,10 +6,24 @@ description: Draft chapters from outlines with pre-checks, calibration, and memo
 # 正文 (Write)
 
 ## Usage
-触发指令：`加载正文`、`写正文`、`写一章`、`武行正文`
+触发指令：`加载正文`、`写正文`、`写一章`、`武行正文`、`审查正文`、`审查章节`
 
 ## 目标
 将大纲转化为高质量正文，按章纲分场景撰写，并更新角色状态、伏笔与进度。
+
+## 去 AI 味总则
+
+本技能在正文创作、完稿校准、章节审查三个阶段，都必须显式参考以下全局规则文件：
+
+- `.agents/rules/anti-ai-expression.md`
+- `.agents/rules/anti-ai-rhythm.md`
+- `.agents/rules/character-realism.md`
+
+执行要求：
+
+- 这三份规则不是“可选灵感”，而是正文阶段的默认硬约束。
+- 若 `1-边界/1.2_文风.md`、项目宪法 `.novelkit/constitution/MASTER.md` 与全局规则存在交叉，以“题材正确 + 去 AI 味 + 人物真实”三者兼容为目标执行。
+- 若用户明确指定文风，以用户要求为最高优先级，但仍应尽量规避机械表达、套路句式和失真人物反应。
 
 ## 📌 阶段开始前：回顾预期
 
@@ -45,15 +59,19 @@ description: Draft chapters from outlines with pre-checks, calibration, and memo
      - `1-边界/1.2_文风.md`（基础文风 — 路径已注册于 `SOLOENT.md §5`）
      - `1-边界/1.5_微观节奏拆解.md`（如有：导演手册，场景调度/镜头语言）
   2. **红线底线**：项目宪法 `.novelkit/constitution/MASTER.md`（路径已注册于 `SOLOENT.md §6`）
-  3. **设定支持**：
+  3. **去 AI 味底线**：
+     - `.agents/rules/anti-ai-expression.md`
+     - `.agents/rules/anti-ai-rhythm.md`
+     - `.agents/rules/character-realism.md`
+  4. **设定支持**：
      - 查阅 `SOLOENT.md §2`（世界观索引）和 `§3`（角色索引），按指针读取对应文件
      - `2-设定/2.3_金手指设定.md`（如有：若本章涉及使用）
-  4. **当前状态**：`.novelkit/memory/character_state.md`（路径注册于 `SOLOENT.md §7.2`，确保获取最新状态）
-  5. **伏笔与进度**：
+  5. **当前状态**：`.novelkit/memory/character_state.md`（路径注册于 `SOLOENT.md §7.2`，确保获取最新状态）
+  6. **伏笔与进度**：
      - `.novelkit/memory/foreshadowing.md`（路径注册于 `SOLOENT.md §7.4`）
      - `SOLOENT.md §8`（当前阶段与待办）
-  6. **本章指令**：本章章纲部分。
-  7. **上下文参考**：读取 **上一章正文**（确保剧情连贯、语气承接）。
+  7. **本章指令**：本章章纲部分。
+  8. **上下文参考**：读取 **上一章正文**（确保剧情连贯、语气承接）。
 - **目的**：防止逻辑BUG、风格漂移和设定遗忘。
 
 ---
@@ -65,6 +83,8 @@ description: Draft chapters from outlines with pre-checks, calibration, and memo
   - **分场景生成**：严格按照章纲拆解的场景顺序，**逐个场景**进行撰写。
   - **字数锚定**：建议单章总字数在 **2300-4000 字** 之间（用户可根据平台要求自行指定范围）。
   - **文风执行**：严格执行 `1-边界/1.2_文风.md` 的要求，注重"展示而非讲述"(Show, Don't Tell)，强化感官描写。
+  - **反 AI 表达执行**：逐场景检查是否出现黑名单词、陈词滥调、总结性旁白、机械化动作链和均匀段落节奏；发现后当场改写，不留到最后集中修补。
+  - **人物真实性执行**：人物说话和反应必须贴合身份、处境、利益与情绪，不允许只为推进剧情而统一腔调。
   - **结尾钩子**：确保章节末尾包含章纲中设计的悬念或钩子。
   - **创作范围**：严格遵守章纲剧情范围，不得超出。
 - **输出产物**：`4-正文/第X章_草稿.md`。
@@ -77,18 +97,50 @@ description: Draft chapters from outlines with pre-checks, calibration, and memo
 ## 步骤 3：完稿后校准 (Post-Writing Calibration)
 
 - **动作**：
-  1. **严格审查（五项检查）**：
+  1. **严格审查（八项检查）**：
      - **字数检查**：确保单章字数在2300-4000字之间（使用 `scripts/count_chinese_words.py` 统计），可以超出 4000 字，但不能低于 2300 字。
      - **大纲符合性检查**：对照 章纲，检查本章核心事件、场景和结尾钩子是否完全按计划执行。
      - **文风检查**：对照 `1-边界/1.2_文风.md` 和项目宪法，检查是否存在AI写作痕迹。
+     - **反 AI 表达检查**：逐项对照 `.agents/rules/anti-ai-expression.md`，检查是否存在黑名单词、套路句、无意义总结、修饰语堆砌。
+     - **反 AI 韵律检查**：逐项对照 `.agents/rules/anti-ai-rhythm.md`，检查动作链是否机械、句式呼吸是否单一、段落节奏是否过匀。
+     - **人物真实性检查**：对照 `.agents/rules/character-realism.md`，检查人物动机、对话、反应和行为是否真实且前后一致。
      - **接续检查**：对照上一章，检查剧情、时间、地点是否无缝接续。
      - **金手指合规性**：（若涉及）检查表现形式是否符合 相关金手指设定文件。
-  2. **显式输出【完稿自检卡】**：如果五项检查有一项不通过，必须重新创作，或者进行相应修订。
+  2. **显式输出【完稿自检卡】**：至少包含“字数 / 大纲符合 / 文风 / 反 AI 表达 / 反 AI 韵律 / 人物真实性 / 接续与设定”七栏结果。如果有一项不通过，必须重新创作，或者进行相应修订。
 - **目的**：保持设定与正文的实时同步，确保单章质量达标。
 
 ---
 
-## 步骤 4：伏笔、状态与进度更新 (Foreshadowing, State & Progress Update)
+## 步骤 4：章节审查（可选，但强烈建议用于关键章） (Chapter Review)
+
+- **适用时机**：
+  - 用户明确说“审查这一章”“看看这一章有没有 AI 味”“帮我精修这一章”
+  - 关键章节，如开篇章、爆点章、反转章、收束章
+  - 连续多章写完后，需要联审节奏、逻辑和风格统一性
+- **动作**：
+  1. 若存在 `docs/提示词-05-章节审查.md`，优先读取并遵循。
+  2. 审查前必须加载：
+     - `1-边界/1.2_文风.md`
+     - `.novelkit/constitution/MASTER.md`
+     - `.agents/rules/anti-ai-expression.md`
+     - `.agents/rules/anti-ai-rhythm.md`
+     - `.agents/rules/character-realism.md`
+     - 本章章纲、上一章正文、待审正文
+  3. 输出完整审查报告，至少覆盖：
+     - 字数
+     - 大纲符合度
+     - 文风与题材一致性
+     - 反 AI 表达
+     - 反 AI 韵律
+     - 人物真实性
+     - 上下文接续
+     - 结尾钩子有效性
+  4. 对每个问题给出具体定位和可执行修改建议；必要时给出“建议重写本章”结论。
+- **输出产物**：`审查/第X章-审查.md`（若用户要求落盘时）。
+
+---
+
+## 步骤 5：伏笔、状态与进度更新 (Foreshadowing, State & Progress Update)
 
 ⚠️ **CRITICAL STEP**: 此步骤决定了记忆的连续性。绝对不可跳过！
 
@@ -102,7 +154,7 @@ description: Draft chapters from outlines with pre-checks, calibration, and memo
 
 ## 🚫 循环阻断 (Loop Break)
 
-- **动作**：在完成上述所有步骤（1-4）后，**必须暂停**。
+- **动作**：在完成上述所有步骤（1-5）后，**必须暂停**。
 - **状态检查与分支选择**：
   1. **正常推进**：
      - 检查当前卷的章纲。
