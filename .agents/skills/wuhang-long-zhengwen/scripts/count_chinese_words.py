@@ -4,6 +4,7 @@
 import os
 import re
 import sys
+from pathlib import Path
 
 def count_chinese_words(text):
     """
@@ -20,25 +21,42 @@ def count_chinese_words(text):
     
     return len(text)
 
-def count_single_chapter(chapter_num, chapter_dir):
-    """统计单个章节的字数"""
-    chapter_dir = "/Users/wuhang/Desktop/都市穿越文豪/novel/4-正文"
-    
-    # Find file matching pattern
-    target_prefix = f"第{chapter_num:03d}章"
-    found_file = None
-    for filename in os.listdir(chapter_dir):
-        if filename.startswith(target_prefix) and filename.endswith(".md"):
-            found_file = filename
-            break
-            
-    if not found_file:
-        print(f"❌ 错误：未找到第{chapter_num}章文件 (前缀: {target_prefix})")
+def resolve_chapter_dir(chapter_dir=None):
+    """优先使用项目当前目录下的 4-正文。"""
+    if chapter_dir:
+        return Path(chapter_dir)
+    return Path.cwd() / "4-正文"
+
+
+def find_chapter_file(chapter_num, chapter_dir):
+    """兼容 第1章 / 第001章 两种命名。"""
+    candidates = [
+        f"第{chapter_num}章",
+        f"第{chapter_num:03d}章",
+    ]
+
+    if not chapter_dir.exists():
         return None
-        
-    file_path = os.path.join(chapter_dir, found_file)
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    for path in chapter_dir.iterdir():
+        if not path.is_file() or path.suffix.lower() != ".md":
+            continue
+        if any(path.name.startswith(prefix) for prefix in candidates):
+            return path
+    return None
+
+
+def count_single_chapter(chapter_num, chapter_dir=None):
+    """统计单个章节的字数"""
+    chapter_dir = resolve_chapter_dir(chapter_dir)
+
+    found_file = find_chapter_file(chapter_num, chapter_dir)
+    if not found_file:
+        print(f"❌ 错误：未找到第{chapter_num}章文件")
+        print(f"当前搜索目录：{chapter_dir}")
+        return None
+
+    with open(found_file, 'r', encoding='utf-8') as f:
         content = f.read()
         words = count_chinese_words(content)
     
@@ -57,8 +75,9 @@ def count_single_chapter(chapter_num, chapter_dir):
     
     return words
 
-def count_all_chapters(chapter_dir):
+def count_all_chapters(chapter_dir=None):
     """统计所有章节的字数"""
+    chapter_dir = resolve_chapter_dir(chapter_dir)
     print("=== 章节字数统计报告 (中文字数 + 标点) ===")
     print()
     
@@ -66,18 +85,10 @@ def count_all_chapters(chapter_dir):
     chapter_stats = []
     
     for i in range(1, 200):
-        chapter_num = f"第{i:03d}章"
-        # Find file
-        found_file = None
-        if os.path.exists(chapter_dir):
-            for filename in os.listdir(chapter_dir):
-                if filename.startswith(chapter_num) and filename.endswith(".md"):
-                    found_file = filename
-                    break
-        
+        found_file = find_chapter_file(i, chapter_dir)
+
         if found_file:
-            file_path = os.path.join(chapter_dir, found_file)
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(found_file, 'r', encoding='utf-8') as f:
                 content = f.read()
                 words = count_chinese_words(content)
                 total_words += words
@@ -90,7 +101,9 @@ def count_all_chapters(chapter_dir):
     print()
     print("=== 统计汇总 ===")
     print(f"总字数: {total_words:,} 字")
-    print(f"平均字数: {total_words // 44:,} 字/章")
+    chapter_count = len(chapter_stats)
+    avg_words = total_words // chapter_count if chapter_count else 0
+    print(f"平均字数: {avg_words:,} 字/章")
     
     # 统计字数分布
     ranges = [
@@ -130,14 +143,12 @@ def count_all_chapters(chapter_dir):
         print(f"最长章节: 第{max_chapter[0]}章 ({max_chapter[1]} 字)")
 
 def main():
-    chapter_dir = "/Users/wuhang/Desktop/都市穿越文豪/novel/4-正文"
-    
     # 检查命令行参数
     if len(sys.argv) > 1:
         # 单章模式
         try:
             chapter_num = int(sys.argv[1])
-            count_single_chapter(chapter_num, chapter_dir)
+            count_single_chapter(chapter_num)
         except ValueError:
             print("❌ 错误：请输入有效的章节号（数字）")
             print("用法：")
@@ -145,7 +156,7 @@ def main():
             print("  全部统计: python3 count_chinese_words.py")
     else:
         # 批量模式
-        count_all_chapters(chapter_dir)
+        count_all_chapters()
 
 if __name__ == "__main__":
     main()

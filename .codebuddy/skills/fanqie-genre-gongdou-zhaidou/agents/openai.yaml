@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄宫斗宅斗"
+  short_description: "仅用于宫斗宅斗题材的斗点设计、算计链与反击节奏优化"
+  default_prompt: "Use $fanqie-genre-gongdou-zhaidou only for gongdou or zhaidou novels."

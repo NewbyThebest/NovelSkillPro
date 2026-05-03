@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄课堂台账"
+  short_description: "维护番茄课堂文章与技能映射台账"
+  default_prompt: "Use $fanqie-course-registry to check whether a Fanqie course article has already been turned into a skill and update the registry."

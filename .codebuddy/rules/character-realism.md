@@ -1,11 +1,3 @@
----
-description: 
-alwaysApply: false
-enabled: true
-updatedAt: 2026-04-25T17:07:01.529Z
-provider: 
----
-
 # 人物真实感
 
 **核心目标**：通过动机杂糅、弱点暴露、细节留痕等技巧，使每个角色都像真实活着的"人"而非机械的"棋子"。
