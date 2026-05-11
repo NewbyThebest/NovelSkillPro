@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄玄幻题材"
+  short_description: "仅用于玄幻题材的升级体系、爽点补强与同质化修正方案"
+  default_prompt: "Use $fanqie-genre-xuanhuan only for xuanhuan novels."

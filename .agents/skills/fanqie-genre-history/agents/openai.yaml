@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄历史题材"
+  short_description: "仅用于历史文的史料准备、主线搭建与人物反差提炼方案"
+  default_prompt: "Use $fanqie-genre-history only for historical novels."

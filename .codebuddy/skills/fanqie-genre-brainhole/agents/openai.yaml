@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄脑洞题材"
+  short_description: "仅用于脑洞文的核心设定、副本玩法、书名筛选与开篇爆点"
+  default_prompt: "Use $fanqie-genre-brainhole only for brainhole webnovels."

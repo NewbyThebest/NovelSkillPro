@@ -1,0 +1,14 @@
+# Ignore everything by default.
+*
+
+# Allow Git to traverse directories.
+!*/
+
+# Track only these workspace directories and their contents.
+!.agents/
+!.agents/**
+!.codebuddy/
+!.codebuddy/**
+
+# Keep this ignore file tracked.
+!.gitignore

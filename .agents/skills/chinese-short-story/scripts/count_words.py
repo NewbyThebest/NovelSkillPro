@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-字数统计脚本 — 中文短篇爽文创作
+字数统计脚本 - 番茄短故事创作
 
 用法：
   python3 scripts/count_words.py 章节/第01章.md
@@ -45,8 +45,8 @@ def process_file(path: str) -> None:
         return
 
     total = count_chars(content)
-    status = "✅ 达标" if 800 <= total <= 1500 else ("⚠️  偏少" if total < 800 else "⚠️  偏多")
-    print(f"{path}  →  {total} 字  {status}（目标：800–1500）")
+    status = "[达标]" if 800 <= total <= 1500 else ("[偏少]" if total < 800 else "[偏多]")
+    print(f"{path} -> {total} 字 {status}（目标：800-1500）")
 
 
 def main() -> None:

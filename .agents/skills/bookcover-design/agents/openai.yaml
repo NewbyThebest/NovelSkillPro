@@ -1,0 +1,4 @@
+openai:
+  display_name: "番茄书封设计"
+  short_description: "按番茄移动端点击逻辑生成小说封面设计方案和 AI 绘图提示词"
+  default_prompt: "帮我按番茄风格设计这本小说的封面，并给出可用于 AI 绘图的提示词。"

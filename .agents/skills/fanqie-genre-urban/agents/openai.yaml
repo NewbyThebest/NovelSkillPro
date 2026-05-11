@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄都市题材"
+  short_description: "仅用于都市文的现实代入、关系网络与不同子类起手优化"
+  default_prompt: "Use $fanqie-genre-urban only for urban novels."

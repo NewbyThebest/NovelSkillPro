@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄仙侠题材"
+  short_description: "仅用于仙侠题材的流派判断、凡人流开篇设计与升级路径校准"
+  default_prompt: "Use $fanqie-genre-xianxia only for xianxia novels."

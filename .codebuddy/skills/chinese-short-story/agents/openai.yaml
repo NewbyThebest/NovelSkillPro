@@ -1,0 +1,4 @@
+openai:
+  display_name: "番茄短故事创作"
+  short_description: "按番茄短故事口径完成导语、角色、大纲、正文、审查和标题包装"
+  default_prompt: "帮我按番茄短故事工作流，把这个脑洞发展成导语、设定、大纲和正文。"
