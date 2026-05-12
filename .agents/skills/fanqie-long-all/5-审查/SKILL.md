@@ -96,7 +96,7 @@ description: "Review Fanqie-style settings, outlines, or drafted chapters for re
 - 提出具体的修改方案（如：调整事件顺序、增加危机感、强化金手指作用）。
 - **【强制暂停】** 质检完成后，**禁止继续执行任何后续操作，等待用户明确回复**：
   > 「大纲质检已完成，请查看以上问题与建议。确认修改完毕或选择忽略后回复『继续』。」
-- 收到用户『继续』（或等效肯定）后，方可进入下一步（加载 4-正文）。
+- 收到用户『继续』（或等效肯定）后，方可进入下一步（加载 `.agents/skills/fanqie-long-zhengwen/SKILL.md`）。
 
 ---
 
@@ -130,7 +130,7 @@ description: "Review Fanqie-style settings, outlines, or drafted chapters for re
 - 重点标注"出戏"、"啰嗦"、"逻辑不通"的地方，并提供改写示范。
 - **【强制暂停】** 质检完成后，**禁止继续执行任何后续操作，等待用户明确回复**：
   > 「正文质检已完成，请查看以上批注与建议。确认修改完毕或选择忽略后回复『继续』。」
-- 收到用户『继续』（或等效肯定）后，方可继续下一章 4-正文 循环。
+- 收到用户『继续』（或等效肯定）后，方可继续下一章 `.agents/skills/fanqie-long-zhengwen/SKILL.md` 循环。
 
 ---
 
@@ -167,7 +167,7 @@ description: "Review Fanqie-style settings, outlines, or drafted chapters for re
 
 - **质检通过**：
   - 若是设定质检 -> 加载 **3-大纲**。
-  - 若是大纲质检 -> 加载 **4-正文**。
-  - 若是正文质检 -> 继续下一章 **4-正文** 循环。
+  - 若是大纲质检 -> 加载 `.agents/skills/fanqie-long-zhengwen/SKILL.md`。
+  - 若是正文质检 -> 继续下一章 `.agents/skills/fanqie-long-zhengwen/SKILL.md` 循环。
 - **质检未通过**：
   - 根据建议修改对应文件，直至通过。
