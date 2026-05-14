@@ -316,8 +316,8 @@ description: "Build Fanqie-style master outline, volume outlines, and chapter be
 
 大纲的三个模块（总纲、卷纲、章纲）**可独立调用、按需生成**。建议在每个模块完成后，加载 **5-审查** 做大纲质检；质检通过后根据进度选择：
 
-- ✅ **渐进式**：写完第一卷章纲 → 加载 **4-正文** 写第一卷正文 → 写完后回来写第二卷卷纲
-- ✅ **批量规划式**：先写完所有卷的卷纲和章纲 → 再加载 **4-正文** 开始正文创作
-- ✅ **快速启动式**：只写第一卷的卷纲和前几章章纲 → 立即加载 **4-正文** → 边写边补充后续章纲
+- ✅ **渐进式**：写完第一卷章纲 → 加载 `.agents/skills/fanqie-long-zhengwen/SKILL.md` 写第一卷正文 → 写完后回来写第二卷卷纲
+- ✅ **批量规划式**：先写完所有卷的卷纲和章纲 → 再加载 `.agents/skills/fanqie-long-zhengwen/SKILL.md` 开始正文创作
+- ✅ **快速启动式**：只写第一卷的卷纲和前几章章纲 → 立即加载 `.agents/skills/fanqie-long-zhengwen/SKILL.md` → 边写边补充后续章纲
 
 **推荐**：大部分作者采用「渐进式」，可以根据写作进度动态调整大纲。
