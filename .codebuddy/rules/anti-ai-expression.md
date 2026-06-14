@@ -1,6 +1,6 @@
 ---
 description: 防止AI特有的填空式造句（"勾起一丝XX""值得注意的是""不是A而是B"答题解释、过深从句嵌套等），但不限制正常小说用语
-alwaysApply: false
+alwaysApply: true
 enabled: true
 updatedAt: 2026-06-13T16:14:55.941Z
 provider: 

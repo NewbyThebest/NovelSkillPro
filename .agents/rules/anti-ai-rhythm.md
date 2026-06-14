@@ -1,6 +1,6 @@
 ---
 description: 控制叙事韵律——段落不超过手机三行、70%控制在两行以内、对话独立成行、每句推进不同信息、避免匀速节奏
-alwaysApply: false
+alwaysApply: true
 enabled: true
 updatedAt: 2026-06-13T16:14:56.899Z
 provider: 

@@ -1,6 +1,6 @@
 ---
 description: 按角色功能分层（主角/配角/工具人）设定动机、弱点、专属细节、价值观冲突和渐进式成长，防止降智和工具人假反应
-alwaysApply: false
+alwaysApply: true
 enabled: true
 updatedAt: 2026-06-13T16:14:57.917Z
 provider: 

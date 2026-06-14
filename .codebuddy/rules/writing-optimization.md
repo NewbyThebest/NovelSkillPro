@@ -1,7 +1,9 @@
 ---
-description: 正文优化的正向策略——改比删好，保留信息的同时提升表达
-alwaysApply: false
+description: 
+alwaysApply: true
 enabled: true
+updatedAt: 2026-06-14T05:14:17.940Z
+provider: 
 ---
 
 # 写作优化策略（正向）
