@@ -84,7 +84,7 @@ description: "Build Fanqie-style direction outlines, optional stage anchors, and
 - **等待用户确认** → 确认后进入下一轮
 
 #### 第5轮：创作原则检查
-- **AI 检视**：检查每一卷的核心高潮是否符合项目宪法
+- **AI 检视**：检查每一卷的核心高潮是否成立
 - **等待用户确认** → 确认后生成文件
 
 ### 输出
@@ -153,7 +153,7 @@ description: "Build Fanqie-style direction outlines, optional stage anchors, and
 - **等待用户确认** → 确认后进入下一轮
 
 #### 第5轮：质检与创作原则
-- **AI 检视**：对照项目宪法确保符合项目专属创作指导
+- **AI 检视**：确保符合项目专属创作指导
 - **等待用户确认** → 确认后生成文件
 
 ### 输出

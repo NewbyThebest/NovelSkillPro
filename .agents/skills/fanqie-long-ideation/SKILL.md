@@ -211,7 +211,7 @@ description: "Brainstorm and develop Fanqie-style long webnovel concept, worldbu
 
 ## 📝 步骤 5: 资产注册 (Asset Registration)
 
-> **CRITICAL**: 必须将生成的设定文件及文风、宪法等注册到 `SOLOENT.md`，否则后续写作无法读取。
+> **CRITICAL**: 必须将生成的设定文件及文风注册到 `SOLOENT.md`，否则后续写作无法读取。
 
 **动作**: 更新 `SOLOENT.md` 的索引区域：
 

@@ -183,33 +183,9 @@ description: "Brainstorm and lock Fanqie-style webnovel concept, selling point, 
 
 ---
 
-## 📋 步骤 5: 创作宪法更新
+## 📝 步骤 5: 资产注册 (Asset Registration)
 
-### 目标
-根据样板书的阅读体验和个人偏好，补充项目专属的避坑规则。
-
-### 动作
-
-**1. 引导阅读与交互**
-- **动作**：提示用户阅读 `.novelkit/constitution/MASTER.md`（项目专属宪法）。
-- **交互**：询问用户："这是本项目的创作宪法。请查看是否有需要新增的'避坑规则'或'项目红线'？（例如：禁止水文、禁止重复描写、禁止某类梗）"
-
-**2. 更新宪法 (可选)**
-- **动作**：若用户有补充，将新规则追加到 `.novelkit/constitution/MASTER.md` 的「项目特有红线」章节。
-
-**用户确认**：
-- **【强制暂停】** 输出以下提示后，**禁止继续执行任何后续步骤，等待用户明确回复**：
-  > 「已更新 `.novelkit/constitution/MASTER.md`，请打开文件确认宪法内容无误后回复『继续』。」
-- 收到用户『继续』（或等效肯定）后，方可进入步骤 6。
-
-### 注意
-- `MASTER.md` 是项目级的最高法律，所有后续写作都必须遵守。
-
----
-
-## 📝 步骤 6: 资产注册 (Asset Registration)
-
-> **CRITICAL**: 必须将生成的设定文件及文风、宪法等注册到 `SOLOENT.md`，否则后续写作无法读取。
+> **CRITICAL**: 必须将生成的设定文件及文风注册到 `SOLOENT.md`，否则后续写作无法读取。
 
 **动作**: 更新 `SOLOENT.md` 的索引区域：
 
@@ -222,9 +198,6 @@ description: "Brainstorm and lock Fanqie-style webnovel concept, selling point, 
 
 3. **文风 (`§5`)**（若边界确定流程已产出）:
    - 添加/更新指针: `-> 1-边界/1.2_文风.md`
-
-4. **创作宪法与软约束 (`§6 Key Notes & Soft Constraints`)**:
-   - 添加/更新指针: `-> .novelkit/constitution/MASTER.md`
 
 **用户确认**：
 - **【强制暂停】** 输出以下提示后，**禁止继续执行任何后续步骤，等待用户明确回复**：

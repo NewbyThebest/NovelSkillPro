@@ -123,7 +123,6 @@ description: "Review Fanqie-style settings, outlines, or drafted chapters for re
 
 4. **文风与红线 (Style & Constraints)**
    - [ ] **AI味去除**：检查是否存在翻译腔、重复词汇、过度书面语。
-   - [ ] **红线检查**：是否违反项目宪法（`.novelkit/constitution/MASTER.md`）中的禁忌？
 
 **执行动作**：
 - 模拟【番茄读者】或【资深编辑】视角，进行段落级批注。

@@ -26,7 +26,6 @@ description: "Run a Fanqie-style long-form Chinese webnovel pipeline: project in
 - 在项目根创建目录：`1-边界`、`2-设定`、`3-大纲`、`4-正文`、`5-审查`、`.novelkit/constitution`、`.novelkit/memory`。
 - 从本技能包 `1-边界确定/docs/` 读取并写入项目：
   - `SOLOENT.md` → 项目根目录
-  - `MASTER.md` → `.novelkit/constitution/MASTER.md`
   - `TEMPLATE_CHARACTER_STATE.md` → `.novelkit/memory/character_state.md`
   - `TEMPLATE_FORESHADOWING.md` → `.novelkit/memory/foreshadowing.md`
   - `expectation_template.md` → `1-边界/预期.md`
@@ -37,7 +36,7 @@ description: "Run a Fanqie-style long-form Chinese webnovel pipeline: project in
 → 拆解样板书的题材边界、首屏钩子、爽点循环、追读结构与投流素材，产出 1-边界/ 系列文件。完成后继续。
 
 **第二步**：读取并执行 `2-创意与设定/SKILL.md`
-→ 围绕番茄题材适配、核心卖点、金手指/关系爆点、角色表与宪法做创意设定。完成后继续。
+→ 围绕番茄题材适配、核心卖点、金手指/关系爆点、角色表做创意设定。完成后继续。
 
 **第三步**（可选）：读取并执行 `5-审查/SKILL.md`
 → 对当前设定做质检，发现问题回到第二步修正，确认无误后继续。
