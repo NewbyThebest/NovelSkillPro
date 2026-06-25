@@ -64,14 +64,14 @@ def count_single_chapter(chapter_num, chapter_dir=None):
     print(f"字数: {words} 字")
     print()
     
-    if words < 2300:
-        shortage = 2300 - words
-        print(f"⚠️  字数不足：还需 {shortage} 字才能达到最低标准 (2300字)")
+    if words < 2000:
+        shortage = 2000 - words
+        print(f"⚠️  字数不足：还需 {shortage} 字才能达到最低标准 (2000字)")
     elif words > 4000:
         excess = words - 4000
         print(f"✅ 字数充足：超出建议上限 {excess} 字 (可接受)")
     else:
-        print(f"✅ 字数达标：符合标准范围 (2300-4000字)")
+        print(f"✅ 字数达标：符合标准范围 (2000-4000字)")
     
     return words
 
@@ -124,12 +124,12 @@ def count_all_chapters(chapter_dir=None):
     
     # 找出字数不足的章节
     print()
-    print("=== 字数不足章节 (< 2300 字) ===")
-    insufficient = [(i, w) for i, w in chapter_stats if 0 < w < 2300]
+    print("=== 字数不足章节 (< 2000 字) ===")
+    insufficient = [(i, w) for i, w in chapter_stats if 0 < w < 2000]
     
     if insufficient:
         for i, w in insufficient:
-            print(f"⚠️  第{i:3d}章: {w:5d} 字 (不足 {2300-w} 字)")
+            print(f"⚠️  第{i:3d}章: {w:5d} 字 (不足 {2000-w} 字)")
     else:
         print("✅ 所有章节字数均达标")
     
