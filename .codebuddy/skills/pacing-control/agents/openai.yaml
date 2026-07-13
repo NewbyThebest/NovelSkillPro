@@ -1,4 +1,0 @@
-openai:
-  display_name: "番茄节奏控制"
-  short_description: "校准首屏钩子、章内爆点、短循环爽点和高潮后追读"
-  default_prompt: "帮我按番茄节奏检查这段大纲/章节，看看哪里太慢、太水或缺爽点。"

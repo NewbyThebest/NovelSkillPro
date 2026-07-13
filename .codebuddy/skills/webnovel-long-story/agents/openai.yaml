@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄长篇全流程"
+  short_description: "从预期、设定、大纲到逐章定稿的番茄长篇创作流程。"
+  default_prompt: "使用 $webnovel-long-story 带我从项目初始化开始，完成一部番茄长篇小说的全流程创作。"

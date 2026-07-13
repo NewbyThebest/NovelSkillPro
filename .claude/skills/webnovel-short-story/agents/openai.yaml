@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄短故事创作"
+  short_description: "从预期到完稿复核，完成有结算的番茄短故事。"
+  default_prompt: "使用 $webnovel-short-story 把这个脑洞发展成一部有完整结算的番茄短故事。"

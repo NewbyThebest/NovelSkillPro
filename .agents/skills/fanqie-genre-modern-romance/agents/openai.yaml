@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄现言题材"
-  short_description: "仅用于现代言情的感情剧情并行、套路切入与女主成长设计"
-  default_prompt: "Use $fanqie-genre-modern-romance only for modern-romance novels."

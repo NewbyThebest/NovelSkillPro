@@ -1,0 +1,4 @@
+interface:
+  display_name: "网文样板书拆解"
+  short_description: "以章节证据拆解网文样板书的卖点、结构与可迁移写法。"
+  default_prompt: "使用 $book-analysis 拆解这本样板书，提炼可迁移的写作方法。"

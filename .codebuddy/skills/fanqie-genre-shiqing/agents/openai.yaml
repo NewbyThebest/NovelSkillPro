@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄世情爽文"
-  short_description: "仅用于世情爽文的导语具象化、冲突升级与打脸递进设计"
-  default_prompt: "Use $fanqie-genre-shiqing only for shiqing family-conflict novels."

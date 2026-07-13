@@ -1,0 +1,4 @@
+interface:
+  display_name: "人物活人感"
+  short_description: "补强角色的欲望、压力反应、独立利益与成长链。"
+  default_prompt: "使用 $character-vitality 诊断并补强这个角色的真实感和代入感。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "长篇设定同步"
+  short_description: "确认设定变更的影响范围，并同步设定、总纲和未写规划。"
+  default_prompt: "使用 $webnovel-setting-sync 帮我分析这项新设定会影响哪些文件，并在确认后同步。"

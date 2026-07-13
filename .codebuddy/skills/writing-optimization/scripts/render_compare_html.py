@@ -40,7 +40,7 @@ import re
 
 def count_words(text: str) -> int:
     """统计中文字数（含中文标点），排除空格/英文/数字/Markdown符号。
-    与 fanqie-long-zhengwen/count_chinese_words.py 逻辑一致。"""
+    与 webnovel-zhengwen/scripts/count_chinese_words.py 逻辑一致。"""
     t = re.sub(r'\s+', '', text)
     t = re.sub(r'[a-zA-Z0-9]+', '', t)
     t = re.sub(r'[#*_`\[\]\(\)]+', '', t)

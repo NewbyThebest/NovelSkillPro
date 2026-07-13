@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄新媒体文"
-  short_description: "仅用于新媒体文的噱头搭建、免费期节奏与付费卡点设计"
-  default_prompt: "Use $fanqie-genre-newmedia only for new-media-oriented novels."

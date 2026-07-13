@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄科幻题材"
-  short_description: "仅用于科幻文的新奇感设计、科技树升级与星际扩图规划"
-  default_prompt: "Use $fanqie-genre-scifi only for science-fiction novels."

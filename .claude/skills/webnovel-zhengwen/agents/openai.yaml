@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄正文写作"
+  short_description: "根据总纲、设定和最新状态逐章写作、自查并交付草稿。"
+  default_prompt: "使用 $webnovel-zhengwen 根据当前总纲和设定，帮我完成下一章正文。"

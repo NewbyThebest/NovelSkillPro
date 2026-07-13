@@ -1,4 +1,0 @@
-openai:
-  display_name: "番茄套路检索"
-  short_description: "从本地套路库检索并改编成番茄可兑现的爽点、反转和章尾钩子"
-  default_prompt: "我卡文了，帮我从套路库里找几个适合番茄节奏的爽点和反转方向。"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄古言题材"
-  short_description: "仅用于古代言情的身份关系、礼法压力与情感推进整体方案"
-  default_prompt: "Use $fanqie-genre-guyan only for ancient-romance novels."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "长篇创意设定"
+  short_description: "依据创作预期建立设定案、核心机制、角色表与种子文风文档。"
+  default_prompt: "使用 $webnovel-ideation 根据我的预期文档，逐步完成这本长篇小说的设定。"

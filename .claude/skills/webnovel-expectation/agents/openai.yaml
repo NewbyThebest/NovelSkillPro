@@ -1,0 +1,4 @@
+interface:
+  display_name: "长篇创作预期"
+  short_description: "为长篇创作在设定前确定平台、读者、主线、核心爽点和内容边界。"
+  default_prompt: "使用 $webnovel-expectation 帮我先明确这本长篇小说的创作方向。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "书名与简介"
+  short_description: "根据设定与总纲生成书名、简介及按需投流短文案。"
+  default_prompt: "使用 $webnovel-title-intro 根据我的设定和总纲，生成适合番茄的书名与简介候选。"

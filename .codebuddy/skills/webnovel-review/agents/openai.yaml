@@ -1,0 +1,4 @@
+interface:
+  display_name: "长篇审查质检"
+  short_description: "审查设定、大纲或正文，给出有证据的优先级修改建议。"
+  default_prompt: "使用 $webnovel-review 审查当前小说材料，找出最影响读者体验的问题。"

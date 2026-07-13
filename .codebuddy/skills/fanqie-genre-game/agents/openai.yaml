@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄游戏题材"
-  short_description: "仅用于游戏文的术语控制、升级感强化与开篇切入整体方案"
-  default_prompt: "Use $fanqie-genre-game only for game-fiction novels."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄长篇综合诊断"
+  short_description: "结合大纲和前三章，诊断番茄长篇的平台适配与商业潜力。"
+  default_prompt: "使用 $ai-editor-fanqie 根据大纲和完整前三章生成番茄长篇综合诊断报告。"

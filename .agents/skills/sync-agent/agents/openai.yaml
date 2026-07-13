@@ -1,0 +1,4 @@
+interface:
+  display_name: "技能镜像同步"
+  short_description: "预览并确认后，将 .agents 技能同步到 Claude 和 CodeBuddy。"
+  default_prompt: "使用 $sync-agent 预览当前技能镜像差异，确认后再执行同步。"

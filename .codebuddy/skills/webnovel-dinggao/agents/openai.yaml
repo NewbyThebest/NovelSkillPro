@@ -1,0 +1,4 @@
+interface:
+  display_name: "章节定稿回写"
+  short_description: "以最新定稿正文回写章纲、更新控制台并按需维护规划。"
+  default_prompt: "使用 $webnovel-dinggao 将刚确认的章节定稿并更新项目状态。"

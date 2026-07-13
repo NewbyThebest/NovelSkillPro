@@ -1,4 +1,4 @@
-openai:
+interface:
   display_name: "番茄冲突设计"
   short_description: "按番茄节奏设计首屏冲突、情绪爆点、反击结算和章尾钩子"
-  default_prompt: "帮我按番茄节奏升级这段剧情冲突，让它更有情绪爆点和章尾钩子。"
+  default_prompt: "使用 $conflict-design 按番茄节奏升级这段剧情冲突，强化情绪爆点与章尾钩子。"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "番茄悬疑题材"
-  short_description: "仅用于悬疑推理的氛围营造、案件逻辑与合规边界整体方案"
-  default_prompt: "Use $fanqie-genre-suspense only for suspense or mystery novels."

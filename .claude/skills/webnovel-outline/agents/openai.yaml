@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄长篇大纲"
+  short_description: "从已确认设定规划终点方向、阶段路标与近端追读承诺。"
+  default_prompt: "使用 $webnovel-outline 根据现有预期和设定，逐步完成这本番茄长篇的全书方向大纲。"

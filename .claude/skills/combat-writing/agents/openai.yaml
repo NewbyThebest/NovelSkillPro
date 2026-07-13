@@ -1,0 +1,7 @@
+interface:
+  display_name: "打斗描写"
+  short_description: "设计、描写和润色网文打斗动作场面。"
+  default_prompt: "使用 $combat-writing 设计或润色一场网文打斗。"
+
+policy:
+  allow_implicit_invocation: true

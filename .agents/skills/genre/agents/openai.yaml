@@ -1,0 +1,4 @@
+interface:
+  display_name: "番茄题材写作"
+  short_description: "按具体题材路由提供开篇、卖点、人设与避坑实用建议"
+  default_prompt: "使用 $genre 判断本书题材，并按对应参考给出开篇、卖点与人设建议。"

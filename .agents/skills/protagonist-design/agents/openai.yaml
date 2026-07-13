@@ -1,4 +1,0 @@
-openai:
-  display_name: "番茄主角设计"
-  short_description: "设计有代入感、反差标签、首章动作和持续爽点接口的番茄主角"
-  default_prompt: "帮我按番茄风格设计一个主角，让他更有代入感和爽点兑现能力。"

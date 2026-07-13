@@ -9,6 +9,17 @@
 !.agents/**
 !.codebuddy/
 !.codebuddy/**
+!.claude/
+!.claude/**
+!AGENTS.md
+
+# 但排除机器本地的权限/设置文件（每台电脑不同，不该同步）
+.claude/settings.local.json
+
+# Ignore local OS and Python cache artifacts.
+**/.DS_Store
+**/__pycache__/
+**/*.pyc
 
 # Keep this ignore file tracked.
 !.gitignore

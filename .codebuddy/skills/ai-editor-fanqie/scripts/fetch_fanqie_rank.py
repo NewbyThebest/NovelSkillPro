@@ -39,7 +39,11 @@ RANK_MOLD_MAP = {
     "new": "1",
 }
 
-DEFAULT_CACHE_DAYS = 30
+DEFAULT_DATA_CACHE_DAYS = 7
+DEFAULT_CATEGORY_CACHE_DAYS = 30
+DEFAULT_DATA_STALE_DAYS = 30
+DEFAULT_CATEGORY_STALE_DAYS = 90
+HTTP_TIMEOUT = 15
 
 
 def safe_slug(text: str) -> str:
@@ -92,22 +96,64 @@ def cache_age_days(result: dict[str, Any], path: Path) -> float:
     return max((now - fetched_at).total_seconds() / 86400, 0)
 
 
-def load_fresh_cache(path: Path, max_age_days: int) -> dict[str, Any] | None:
-    if max_age_days <= 0 or not path.exists():
+def read_cache(path: Path) -> tuple[dict[str, Any], float] | None:
+    if not path.exists():
         return None
     try:
         with open(path, "r", encoding="utf-8") as f:
             result = json.load(f)
     except (OSError, json.JSONDecodeError):
         return None
-    if cache_age_days(result, path) > max_age_days:
+    if not isinstance(result, dict):
+        return None
+    age_days = cache_age_days(result, path)
+    annotate_heat_stats(result.get("category_stats", []))
+    return result, age_days
+
+
+def load_fresh_cache(path: Path, max_age_days: int) -> dict[str, Any] | None:
+    if max_age_days <= 0:
+        return None
+    loaded = read_cache(path)
+    if loaded is None:
+        return None
+    result, age_days = loaded
+    if age_days > max_age_days:
         return None
     result.setdefault("cache", {})
     result["cache"].update({
         "hit": True,
+        "stale_fallback": False,
         "path": str(path),
         "max_age_days": max_age_days,
-        "age_days": round(cache_age_days(result, path), 2),
+        "age_days": round(age_days, 2),
+    })
+    result["cache"].pop("fallback_error", None)
+    result["cache"].pop("stale_if_error_days", None)
+    return result
+
+
+def load_stale_cache(
+    path: Path,
+    max_age_days: int,
+    error: Exception,
+) -> dict[str, Any] | None:
+    if max_age_days <= 0:
+        return None
+    loaded = read_cache(path)
+    if loaded is None:
+        return None
+    result, age_days = loaded
+    if age_days > max_age_days:
+        return None
+    result.setdefault("cache", {})
+    result["cache"].update({
+        "hit": True,
+        "stale_fallback": True,
+        "path": str(path),
+        "age_days": round(age_days, 2),
+        "stale_if_error_days": max_age_days,
+        "fallback_error": str(error),
     })
     return result
 
@@ -117,17 +163,17 @@ def save_cache(path: Path, result: dict[str, Any], max_age_days: int) -> None:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     cached = dict(result)
-    cached.setdefault("cache", {})
-    cached["cache"].update({
+    cached["cache"] = {
         "hit": False,
+        "stale_fallback": False,
         "path": str(path),
         "max_age_days": max_age_days,
-    })
+    }
     with open(path, "w", encoding="utf-8") as f:
         json.dump(cached, f, ensure_ascii=False, indent=2)
 
 
-def http_get(url: str, timeout: int = 25) -> str:
+def http_get(url: str, timeout: int | None = None) -> str:
     req = urllib.request.Request(
         url,
         headers={
@@ -136,7 +182,7 @@ def http_get(url: str, timeout: int = 25) -> str:
             "Accept": "application/json,text/plain,*/*",
         },
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    with urllib.request.urlopen(req, timeout=timeout or HTTP_TIMEOUT) as resp:
         return resp.read().decode("utf-8", "ignore")
 
 
@@ -273,7 +319,8 @@ def fetch_gender_scan(
     max_categories: int | None = None,
 ) -> dict[str, Any]:
     books: list[dict[str, Any]] = []
-    categories = meta["categories"].get(gender, []) or []
+    all_categories = meta["categories"].get(gender, []) or []
+    categories = all_categories
     if max_categories is not None and max_categories > 0:
         categories = categories[:max_categories]
     gender_code = GENDER_MAP[gender]
@@ -285,11 +332,24 @@ def fetch_gender_scan(
         try:
             data = api_call(meta["rank_version"], cat_id, gender_code, rank_type, 0, per_category)
         except Exception as exc:
-            print(f"warn: failed category {cat_name}({cat_id}): {exc}", file=sys.stderr)
-            continue
+            raise RuntimeError(
+                f"Full category scan failed at {cat_name}({cat_id}): {exc}"
+            ) from exc
         for item in data.get("data", {}).get("book_list", []) or []:
             books.append(normalize_book(item, len(books) + 1, cat_name))
-    return make_result(f"番茄小说 {gender_label(gender)}全分类扫描 {rank_label(rank_type)}", rank_type, books, meta)
+    result = make_result(
+        f"番茄小说 {gender_label(gender)}全分类扫描 {rank_label(rank_type)}",
+        rank_type,
+        books,
+        meta,
+    )
+    result["scan"] = {
+        "complete": len(categories) == len(all_categories),
+        "expected_categories": len(all_categories),
+        "scanned_categories": len(categories),
+        "per_category": per_category,
+    }
+    return result
 
 
 def rank_label(rank_type: str) -> str:
@@ -298,6 +358,25 @@ def rank_label(rank_type: str) -> str:
 
 def gender_label(gender: str) -> str:
     return "男频" if gender == "male" else "女频"
+
+
+def annotate_heat_stats(stats: Any) -> None:
+    if not isinstance(stats, list):
+        return
+    category_count = len(stats)
+    for index, item in enumerate(stats):
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            continue
+        stat = item[1]
+        if not isinstance(stat, dict):
+            continue
+        stat["heat_rank"] = index + 1
+        stat["category_count"] = category_count
+        stat["heat_percentile"] = (
+            0.0
+            if category_count <= 1
+            else round(index / (category_count - 1) * 100, 2)
+        )
 
 
 def make_result(
@@ -320,6 +399,13 @@ def make_result(
         count = stat["book_count"] or 1
         stat["avg_read_count"] = stat["total_read_count"] // count
 
+    sorted_stats = sorted(
+        category_stats.items(),
+        key=lambda kv: (kv[1]["total_read_count"], kv[1]["book_count"]),
+        reverse=True,
+    )
+    annotate_heat_stats(sorted_stats)
+
     return {
         "source": "fanqienovel.com web rank API",
         "fetched_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -331,11 +417,7 @@ def make_result(
             "Text fields may contain PUA private-use characters due to Fanqie web font obfuscation. "
             "Category IDs, ranks, URLs, word counts, and read counts remain useful for market analysis."
         ),
-        "category_stats": sorted(
-            category_stats.items(),
-            key=lambda kv: (kv[1]["total_read_count"], kv[1]["book_count"]),
-            reverse=True,
-        ),
+        "category_stats": sorted_stats,
         "books": books,
     }
 
@@ -360,7 +442,13 @@ def list_categories(meta: dict[str, Any]) -> dict[str, Any]:
 
 def print_summary(result: dict[str, Any]) -> None:
     cache = result.get("cache") or {}
-    if cache.get("hit"):
+    if cache.get("stale_fallback"):
+        print(
+            f"[stale cache fallback] {cache.get('path')} | "
+            f"age={cache.get('age_days')}d max_age={cache.get('stale_if_error_days')}d | "
+            f"error={cache.get('fallback_error')}"
+        )
+    elif cache.get("hit"):
         print(
             f"[cache hit] {cache.get('path')} | "
             f"age={cache.get('age_days')}d max_age={cache.get('max_age_days')}d"
@@ -382,7 +470,9 @@ def print_summary(result: dict[str, Any]) -> None:
         for cat, stat in stats[:20]:
             print(
                 f"- {cat}: books={stat['book_count']} "
-                f"total_read={stat['total_read_count']} avg_read={stat['avg_read_count']}"
+                f"total_read={stat['total_read_count']} avg_read={stat['avg_read_count']} "
+                f"heat_rank={stat.get('heat_rank')}/{stat.get('category_count')} "
+                f"heat_percentile={stat.get('heat_percentile')}"
             )
     books = result.get("books", [])
     if books:
@@ -395,6 +485,8 @@ def print_summary(result: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    global HTTP_TIMEOUT
+
     parser = argparse.ArgumentParser(description="Fetch Fanqie Novel web rank data")
     parser.add_argument("--list-categories", action="store_true", help="List Fanqie rank categories")
     parser.add_argument("--scan", action="store_true", help="Scan all categories for a gender")
@@ -407,13 +499,30 @@ def main() -> int:
     parser.add_argument("--output", default="", help="Write JSON to this path")
     parser.add_argument("--summary", action="store_true", help="Print human-readable summary")
     parser.add_argument("--cache-dir", default=str(default_cache_dir()), help="Directory for local rank cache")
-    parser.add_argument("--cache-days", type=int, default=DEFAULT_CACHE_DAYS, help="Reuse cached rank data within this many days; 0 disables cache")
+    parser.add_argument("--cache-days", type=int, default=None, help="Reuse fresh cache within this many days; defaults to 30 for category lists and 7 for rank data; 0 disables cache")
+    parser.add_argument("--stale-if-error-days", type=int, default=None, help="On network failure, reuse cache up to this age; defaults to 90 for category lists and 30 for rank data; 0 disables fallback")
+    parser.add_argument("--timeout", type=int, default=HTTP_TIMEOUT, help="HTTP timeout in seconds for each request")
     parser.add_argument("--refresh", action="store_true", help="Ignore cache and fetch fresh data")
     args = parser.parse_args()
+
+    args.cache_days = (
+        args.cache_days
+        if args.cache_days is not None
+        else DEFAULT_CATEGORY_CACHE_DAYS if args.list_categories else DEFAULT_DATA_CACHE_DAYS
+    )
+    args.stale_if_error_days = (
+        args.stale_if_error_days
+        if args.stale_if_error_days is not None
+        else DEFAULT_CATEGORY_STALE_DAYS if args.list_categories else DEFAULT_DATA_STALE_DAYS
+    )
+    HTTP_TIMEOUT = max(args.timeout, 1)
 
     cpath = cache_path(args)
     if not args.refresh:
         cached_result = load_fresh_cache(cpath, args.cache_days)
+        if args.scan and cached_result is not None:
+            if (cached_result.get("scan") or {}).get("complete") is not True:
+                cached_result = None
         if cached_result is not None:
             text = json.dumps(cached_result, ensure_ascii=False, indent=2)
             if args.output:
@@ -425,15 +534,34 @@ def main() -> int:
                 print(text)
             return 0
 
-    meta = get_meta()
-    if args.list_categories:
-        result = list_categories(meta)
-    elif args.scan:
-        max_categories = args.max_categories if args.max_categories > 0 else None
-        result = fetch_gender_scan(meta, args.gender, args.rank_type, args.per_category, max_categories)
-    else:
-        category = args.category or "都市高武"
-        result = fetch_category_rank(meta, category, args.gender, args.rank_type, args.limit)
+    try:
+        meta = get_meta()
+        if args.list_categories:
+            result = list_categories(meta)
+        elif args.scan:
+            max_categories = args.max_categories if args.max_categories > 0 else None
+            result = fetch_gender_scan(meta, args.gender, args.rank_type, args.per_category, max_categories)
+        else:
+            category = args.category or "都市高武"
+            result = fetch_category_rank(meta, category, args.gender, args.rank_type, args.limit)
+    except Exception as exc:
+        stale_result = load_stale_cache(cpath, args.stale_if_error_days, exc)
+        if args.scan and stale_result is not None:
+            if (stale_result.get("scan") or {}).get("complete") is not True:
+                stale_result = None
+        if stale_result is None:
+            raise
+        print(f"warn: network refresh failed; using stale cache: {exc}", file=sys.stderr)
+        result = stale_result
+        text = json.dumps(result, ensure_ascii=False, indent=2)
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(text)
+        if args.summary:
+            print_summary(result)
+        else:
+            print(text)
+        return 0
 
     result.setdefault("cache", {})
     result["cache"].update({

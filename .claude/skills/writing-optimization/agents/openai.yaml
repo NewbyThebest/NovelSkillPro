@@ -1,0 +1,4 @@
+interface:
+  display_name: "正文润色优化"
+  short_description: "按指定力度润色正文，支持简洁、调整、强化和三档对比。"
+  default_prompt: "使用 $writing-optimization 润色这段正文，保留剧情事实并提升清晰度与节奏。"

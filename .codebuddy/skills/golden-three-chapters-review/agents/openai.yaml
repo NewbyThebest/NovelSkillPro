@@ -1,4 +1,4 @@
-openai:
+interface:
   display_name: "番茄黄金三章审核"
-  short_description: "按番茄留存逻辑审核前三章，评分首屏钩子、爽点兑现和追读动力"
-  default_prompt: "帮我按番茄黄金三章标准审一下这本书的前三章，并给出修改清单。"
+  short_description: "按番茄留存逻辑审核前三章的首屏、承诺与追读动力"
+  default_prompt: "使用 $golden-three-chapters-review 审核这本书前三章，并给出修改清单。"
