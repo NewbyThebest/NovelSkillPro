@@ -215,7 +215,7 @@ def render(data: dict) -> str:
   <main>
     <section class="panel">
       <div class="section-head">
-        <h2>原版剧情功能</h2>
+        <h2>原文功能与专项</h2>
         <span class="tag">诊断</span>
       </div>
       <div class="body"><div class="prose">{block(function)}</div></div>
