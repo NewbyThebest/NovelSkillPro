@@ -6,7 +6,10 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
+import re
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -35,9 +38,6 @@ def rich_block(value: object) -> str:
     return rendered
 
 
-import re
-
-
 def count_words(text: str) -> int:
     """统计中文字数（含中文标点），排除空格/英文/数字/Markdown符号。
     与 webnovel-zhengwen/scripts/count_chinese_words.py 逻辑一致。"""
@@ -47,14 +47,61 @@ def count_words(text: str) -> int:
     return len(t)
 
 
+def normalize_metadata_text(value: object) -> str:
+    """Normalize newline spellings commonly introduced by shell quoting."""
+    text = "" if value is None else str(value)
+    return (
+        text.replace("`r`n", "\n")
+        .replace("`n", "\n")
+        .replace("\\r\\n", "\n")
+        .replace("\\n", "\n")
+    )
+
+
+def prepare_data(data: dict) -> dict:
+    if not isinstance(data, dict):
+        raise ValueError("预览数据必须是 JSON 对象。")
+
+    source = str(data.get("source") or "").strip()
+    if not source:
+        raise ValueError("原文为空，拒绝覆盖预览页。")
+
+    versions = data.get("versions")
+    if not isinstance(versions, list) or len(versions) != 3:
+        raise ValueError("预览页必须包含简洁、调整、强化三份结果。")
+
+    prepared_versions = []
+    for index, item in enumerate(versions, start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"第 {index} 份结果格式无效。")
+        name = str(item.get("name") or "").strip()
+        text = str(item.get("text") or "").strip()
+        if not name or not text:
+            raise ValueError(f"第 {index} 份结果缺少名称或正文。")
+        prepared_versions.append({"name": name, "text": text})
+
+    function = normalize_metadata_text(data.get("function")).strip()
+    recommendation = normalize_metadata_text(data.get("recommendation")).strip()
+    if not function or not recommendation:
+        raise ValueError("剧情功能或推荐理由为空，拒绝覆盖预览页。")
+
+    return {
+        "title": normalize_metadata_text(data.get("title")).strip()
+        or "润色结果预览页",
+        "source": source,
+        "function": function,
+        "versions": prepared_versions,
+        "recommendation": recommendation,
+    }
+
+
 def render(data: dict) -> str:
-    title = data.get("title") or "润色结果预览页"
-    source = data.get("source") or ""
-    function = data.get("function") or ""
-    recommendation = data.get("recommendation") or ""
-    versions = data.get("versions") or []
-    while len(versions) < 3:
-        versions.append({"name": f"版本{len(versions) + 1}", "text": ""})
+    data = prepare_data(data)
+    title = data["title"]
+    source = data["source"]
+    function = data["function"]
+    recommendation = data["recommendation"]
+    versions = data["versions"]
 
 
     source_card = f"""          <article class="version source-version">
@@ -245,6 +292,30 @@ def render(data: dict) -> str:
 """
 
 
+def write_preview(data: dict, output_path: Path) -> Path:
+    rendered = render(data)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=output_path.parent,
+            prefix=f".{output_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            handle.write(rendered)
+            temporary_path = Path(handle.name)
+        os.replace(temporary_path, output_path)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+    return output_path.resolve()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     source = parser.add_mutually_exclusive_group(required=True)
@@ -263,9 +334,7 @@ def main() -> None:
         raw_json = Path(args.input).read_text(encoding="utf-8-sig")
 
     data = json.loads(raw_json.lstrip("\ufeff"))
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(render(data), encoding="utf-8")
-    print(output_path.resolve())
+    print(write_preview(data, output_path))
 
 
 if __name__ == "__main__":
