@@ -11,11 +11,13 @@ AI 偶尔会把引号写成英文直引号 " ' 、全角直引号 ＂ ＇、
 本脚本扫描目标文件，诊断 + 一键修复。
 
 用法：
-    python fix_quotes.py                   # 只诊断（默认），不改文件
+    python fix_quotes.py                   # 只诊断（默认），扫描 4-正文 全部 md
     python fix_quotes.py --fix             # 诊断并修复 4-正文 下全部 md
     python fix_quotes.py --fix 文件或目录  # 只处理指定文件/目录
-    python fix_quotes.py --file 文件       # 只诊断指定文件
     python fix_quotes.py --fix --strict    # 修复后若仍左右不配对则返回非零退出码
+
+说明：传入含中文的路径时，若在 GBK 终端（旧版 cmd）下发生乱码，
+脚本会尝试自动还原为正确路径。
 
 修复逻辑：
 - 自动修复范围：英文直双引号 " 、全角直双引号 ＂ 、低双引号 „ 、
@@ -24,10 +26,10 @@ AI 偶尔会把引号写成英文直引号 " ' 、全角直引号 ＂ ＇、
   （“他说‘你好’” 这种嵌套单引号是合法的），需要人工确认。
 - 对已存在的中文引号做配对扫描：定位"多余右引号 / 未闭合左引号"，
   只报告位置，不改动（左右写反需人工判断）。
-- 修复前自动备份原文件到 .temp/backup/。
+- 修复直接覆盖原文件，不生成备份（仅改符号，可随时重新运行）。
 """
+
 import argparse
-import shutil
 from collections import Counter
 from pathlib import Path
 
@@ -44,7 +46,6 @@ def find_workspace_root(start: Path) -> Path:
 
 ROOT = find_workspace_root(Path(__file__).resolve().parent)
 DEFAULT_DIR = ROOT / "4-正文"
-BACKUP_DIR = ROOT / ".temp" / "backup"
 
 # 标准中文引号
 LEFT_Q = "\u201c"    # “
@@ -309,13 +310,10 @@ def process_file(path, do_fix):
         for w in warnings:
             report.append(f"  [警告] {w}")
 
-    # 修复前备份
+    # 直接覆盖写入
     if do_fix and fix_count > 0:
-        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-        bak = BACKUP_DIR / (path.name + ".bak")
-        shutil.copy2(path, bak)
         path.write_text(new_text, encoding="utf-8")
-        report.append(f"结果: 已修复 {fix_count} 处，备份于 {bak}")
+        report.append(f"结果: 已修复 {fix_count} 处，原文件已直接更新")
     elif do_fix:
         report.append("结果: 无需修复。")
     else:
@@ -333,6 +331,22 @@ def collect_md(target):
     return []
 
 
+def fix_argv_encoding(raw: str) -> str:
+    """修复终端编码导致的命令行中文参数乱码。
+
+    在 GBK 终端（如旧版 cmd）下，UTF-8 的中文路径参数被按 GBK 解码后
+    会变成乱码 str。这里尝试把它按 GBK 重新编码再按 UTF-8 解码还原。
+    若还原后的路径真实存在则采用，否则返回原值（交给后续逻辑处理）。
+    """
+    try:
+        restored = raw.encode("gbk").decode("utf-8")
+        if restored != raw and Path(restored).exists():
+            return restored
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        pass
+    return raw
+
+
 def main():
     parser = argparse.ArgumentParser(description="中文引号修复脚本")
     parser.add_argument("--fix", action="store_true",
@@ -343,9 +357,12 @@ def main():
                         help="目标文件或目录，默认扫描 4-正文")
     args = parser.parse_args()
 
-    files = collect_md(args.path)
+    # 对命令行传入的中文路径做一次 GBK 乱码还原（旧版 cmd 终端保护）
+    target = fix_argv_encoding(args.path)
+
+    files = collect_md(target)
     if not files:
-        print(f"未找到 md 文件: {args.path}")
+        print(f"未找到 md 文件: {target}")
         return 1
 
     total_fix = 0
