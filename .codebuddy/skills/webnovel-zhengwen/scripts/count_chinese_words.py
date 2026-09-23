@@ -61,7 +61,7 @@ def reference_message(words: int, min_chars: int | None, max_chars: int | None) 
     if min_chars is not None and words < min_chars:
         return f"低于当前参考下限 {min_chars} 字；请结合章节功能判断是否缺少必要推进、结果或场景。"
     if max_chars is not None and words > max_chars:
-        return f"高于当前参考上限 {max_chars} 字；请检查是否存在重复信息或无效停留。"
+        return f"高于当前参考上限 {max_chars} 字。"
     if min_chars is not None or max_chars is not None:
         return "位于当前参考范围内；这不是质量或定稿判定。"
     return None
