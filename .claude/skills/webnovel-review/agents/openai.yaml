@@ -1,0 +1,4 @@
+interface:
+  display_name: "正文审查"
+  short_description: "三个子代理并行审查草稿的格式、事实、设定与可读性。"
+  default_prompt: "使用 $webnovel-review 审查第 X 章草稿。"
