@@ -23,3 +23,6 @@
 
 # Keep this ignore file tracked.
 !.gitignore
+
+# 临时工作目录：克隆的参考项目、抓取产物等，不纳入版本控制
+.temp/
