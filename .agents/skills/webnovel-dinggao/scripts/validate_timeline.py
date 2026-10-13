@@ -13,8 +13,6 @@ REQUIRED_HEADINGS = [
     "## 维护边界",
     "## 当前时间锚点",
     "## 已定稿时间段",
-    "## 持续中的期限与固定时刻",
-    "## 时间不确定项",
 ]
 
 REQUIRED_CURRENT_FIELDS = [
@@ -70,6 +68,31 @@ def parse_period_ranges(text: str) -> list[tuple[int, int, str]]:
         end = int(match.group(3) or start)
         ranges.append((start, end, match.group(1).strip()))
     return ranges
+
+
+def period_bodies(text: str) -> list[tuple[str, str]]:
+    """Return (label, body) for each period heading, body cut at the next heading."""
+    headings = list(
+        re.finditer(
+            r"^###\s+(.+?)（第(\d+)(?:[—-](\d+))?章）\s*$",
+            text,
+            re.M,
+        )
+    )
+    bodies: list[tuple[str, str]] = []
+    for index, heading in enumerate(headings):
+        label = heading.group(1).strip()
+        if index + 1 < len(headings):
+            end = headings[index + 1].start()
+        else:
+            following = re.search(r"^##\s+", text[heading.end():], re.M)
+            end = (
+                heading.end() + following.start()
+                if following
+                else len(text)
+            )
+        bodies.append((label, text[heading.end():end]))
+    return bodies
 
 
 def main() -> int:
@@ -151,6 +174,17 @@ def main() -> int:
         if not any(start <= latest_number <= end for start, end, _ in ranges):
             errors.append(f"已定稿时间段未覆盖最新定稿第{latest_number}章")
 
+        for label, body in period_bodies(text):
+            if "- **" in body:
+                errors.append(
+                    f"时间段“{label}”下不得再写字段子项，整段只写一句话"
+                )
+            lines = [line for line in body.splitlines() if line.strip()]
+            if len(lines) > 1:
+                errors.append(
+                    f"时间段“{label}”应只有一句话，实际为{len(lines)}行"
+                )
+
     future_chapter_refs = [
         int(number)
         for number in re.findall(r"第(\d+)章", text)
@@ -161,18 +195,13 @@ def main() -> int:
             f"时间线引用了尚未定稿章节：{sorted(set(future_chapter_refs))}"
         )
 
-    if "不得自行补" not in text:
-        errors.append("维护边界中缺少不得自行补全时间的约束")
-
     if errors:
         print("时间线校验失败：")
         for error in errors:
             print(f"- {error}")
         return 1
 
-    print(
-        "时间线校验通过：事实截止、当前锚点、章节范围、固定栏目与定稿边界均符合要求。"
-    )
+    print("时间线校验通过：事实截止、当前锚点、章节范围与固定栏目均符合要求。")
     return 0
 
 

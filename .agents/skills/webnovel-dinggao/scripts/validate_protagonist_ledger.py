@@ -14,10 +14,7 @@ REQUIRED_HEADINGS = (
     "## 事实截止",
     "## 1. 当前层级与承载状态",
     "## 2. 当前可调用能力与手段",
-    "## 3. 当前资源余额",
-    "## 4. 关键物品、凭证与证据",
-    "## 5. 不再持有或已耗尽",
-    "## 6. 当前未决事实",
+    "## 3. 当前持有",
 )
 CUTOFF = re.compile(r"^- \*\*章节\*\*：第\s*(\d+)\s*章《(.+?)》定稿后。?$", re.M)
 SUMMARY = re.compile(r"^- \*\*概况\*\*：(.+?)\s*$", re.M)
@@ -26,7 +23,6 @@ FINAL_FILE = re.compile(r"^第(\d+)章_定稿_(.+)\.md$")
 ABILITY_HEADING = re.compile(r"^#### (.+?)\s*$", re.M)
 PLACEHOLDER_ABILITY_NAMES = {"能力或机制名称", "能力名称", "无已定稿项目"}
 NAMED_BULLET = re.compile(r"^- \*\*(.+?)\*\*：\s*(.*?)\s*$", re.M)
-FUTURE_MARKERS = ("创作原料", "草稿", "计划中的", "尚未获得的奖励", "下一章奖励")
 EMPTY_VALUES = {
     "",
     "无",
@@ -131,31 +127,12 @@ def validate_text(text: str, latest: tuple[int, str] | None) -> list[str]:
     ability_body = section(
         text,
         "## 2. 当前可调用能力与手段",
-        "## 3. 当前资源余额",
+        "## 3. 当前持有",
     )
-    resource_body = section(
-        text,
-        "## 3. 当前资源余额",
-        "## 4. 关键物品、凭证与证据",
-    )
-    item_body = section(
-        text,
-        "## 4. 关键物品、凭证与证据",
-        "## 5. 不再持有或已耗尽",
-    )
-    history_body = section(
-        text,
-        "## 5. 不再持有或已耗尽",
-        "## 6. 当前未决事实",
-    )
-    unresolved_body = section(text, "## 6. 当前未决事实", None)
+    move_body = section(ability_body, "### 当前手段", None)
+    holding_body = section(text, "## 3. 当前持有", None)
 
-    fact_body = "".join(
-        (level_body, ability_body, resource_body, item_body, history_body, unresolved_body)
-    )
-    for marker in FUTURE_MARKERS:
-        if marker in fact_body:
-            errors.append(f"总账事实区含未来或草稿标记“{marker}”，只能记录定稿事实")
+    fact_body = "".join((level_body, ability_body, holding_body))
 
     level_entries = named_entries(level_body)
     abilities = [
@@ -167,36 +144,56 @@ def validate_text(text: str, latest: tuple[int, str] | None) -> list[str]:
         name = match.group(1).strip()
         end = abilities[index + 1].start() if index + 1 < len(abilities) else len(ability_body)
         body = ability_body[match.end() : end]
-        for field in ("**当前作用**", "**当前限制**", "**事实依据**"):
+        for field in ("**作用**", "**限制**"):
             if field not in body:
-                errors.append(f"能力或手段“{name}”缺少字段“{field}”")
+                errors.append(f"核心机制“{name}”缺少字段“{field}”")
 
-    resource_rows = markdown_table_rows(resource_body)
-    resource_entries = resource_rows[1:] if resource_rows else []
-    for row in resource_entries:
-        if len(row) != 5:
-            errors.append(f"资源表行列数错误：{row}")
-        elif not row[0] or not row[1] or not row[4]:
-            errors.append(f"资源表存在缺少名称、余额或事实依据的条目：{row}")
+    # 同一机制的派生信息（如识海小字）写在该机制的字段里，不另立条目。
+    mechanism_names = [match.group(1).strip() for match in abilities]
+    for name in mechanism_names:
+        for other in mechanism_names:
+            if other != name and other.startswith(name):
+                errors.append(
+                    f"核心机制“{other}”是“{name}”的派生信息，"
+                    f"应并进“{name}”的字段里，不另立条目"
+                )
 
-    item_rows = markdown_table_rows(item_body)
-    item_entries = item_rows[1:] if item_rows else []
-    for row in item_entries:
-        if len(row) != 4:
-            errors.append(f"关键物品表行列数错误：{row}")
-        elif not row[0] or not row[1] or not row[3]:
-            errors.append(f"关键物品表存在缺少名称、状态或事实依据的条目：{row}")
+    # 具体招法以表格维护，一行一门，避免随承技次数线性膨胀。
+    moves = markdown_table_rows(move_body)
+    if not moves:
+        errors.append("缺少“### 当前手段”表")
+    else:
+        if [cell.strip() for cell in moves[0]] != ["手段", "类型", "作用", "限制"]:
+            errors.append(
+                f"当前手段表的列应为['手段', '类型', '作用', '限制']，"
+                f"实际为{[cell.strip() for cell in moves[0]]}"
+            )
+        move_entries = moves[1:]
+        if not move_entries:
+            errors.append("当前手段表只有表头，没有任何手段")
+        for row in move_entries:
+            if len(row) != 4:
+                errors.append(f"当前手段表行列数错误：{row}")
+            elif not row[0] or not row[1] or not row[2] or not row[3]:
+                errors.append(f"当前手段表存在缺项的条目：{row}")
 
-    history_entries = named_entries(history_body, {"物品或资源"})
-    unresolved_entries = named_entries(unresolved_body, {"未决项目"})
-    has_assets = bool(
-        level_entries
-        or abilities
-        or resource_entries
-        or item_entries
-        or history_entries
-        or unresolved_entries
-    )
+    holding_rows = markdown_table_rows(holding_body)
+    if not holding_rows:
+        errors.append("缺少“## 3. 当前持有”表")
+    else:
+        if [cell.strip() for cell in holding_rows[0]] != ["物品或资源", "数量", "位置"]:
+            errors.append(
+                f"当前持有表的列应为['物品或资源', '数量', '位置']，"
+                f"实际为{[cell.strip() for cell in holding_rows[0]]}"
+            )
+        holding_entries = holding_rows[1:]
+        for row in holding_entries:
+            if len(row) != 3:
+                errors.append(f"当前持有表行列数错误：{row}")
+            elif not row[0] or not row[1]:
+                errors.append(f"当前持有表存在缺少名称或数量的条目：{row}")
+
+    has_assets = bool(level_entries or abilities or holding_rows)
 
     if summary and not summary_says_no_assets and not has_assets:
         errors.append("当前概况说明存在动态资产，但总账没有任何实际条目")
@@ -226,7 +223,7 @@ def main() -> int:
             print(f"- {error}")
         return 1
 
-    print("主角动态资产总账校验通过：当前概况、事实条目和事实截止符合要求。")
+    print("主角动态资产总账校验通过：当前概况、核心机制、当前手段与当前持有均符合要求。")
     return 0
 
 

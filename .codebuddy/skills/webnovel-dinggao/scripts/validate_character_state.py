@@ -39,18 +39,42 @@ def role_sections(text: str) -> list[tuple[str, str]]:
     return sections
 
 
-def validate_text(text: str) -> list[str]:
+def documented_main_roles(root: Path) -> set[str] | None:
+    """Return the role names documented in 2.3_主要角色设定表.md, or None if unavailable."""
+    path = root / "2-设定" / "2.3_主要角色设定表.md"
+    if not path.is_file():
+        return None
+    text = path.read_text(encoding="utf-8-sig")
+    names: set[str] = set()
+    for raw in re.findall(r"^### (.+?)\s*$", text, re.M):
+        name = raw.strip()
+        # 标题形如“楚管事／楚渊”，两种叫法都算已建档
+        for part in re.split(r"[／/]", name):
+            part = part.strip()
+            if part:
+                names.add(part)
+        names.add(name)
+    return names
+
+
+def validate_text(text: str, main_roles: set[str] | None = None) -> list[str]:
     errors: list[str] = []
 
     if "## 使用规则" not in text:
         errors.append("缺少“## 使用规则”")
-    if "**本章变化依据**" in text:
-        errors.append("仍存在“本章变化依据”，应改为单一的“最近更新依据”")
 
     roles = role_sections(text)
     if not roles:
         errors.append("没有可识别的角色状态条目")
         return errors
+
+    if main_roles is not None:
+        for role, _ in roles:
+            if role not in main_roles:
+                errors.append(
+                    f"角色“{role}”未在 `2-设定/2.3_主要角色设定表.md` 建档，"
+                    "本文件只追踪已建档的主要角色"
+                )
 
     for role, body in roles:
         fields = FIELD.findall(body)
@@ -91,7 +115,9 @@ def main() -> int:
         print(f"角色状态文件校验失败：缺少 {path}")
         return 1
 
-    errors = validate_text(path.read_text(encoding="utf-8-sig"))
+    errors = validate_text(
+        path.read_text(encoding="utf-8-sig"), documented_main_roles(root)
+    )
     if errors:
         print("角色状态文件校验失败：")
         for error in errors:

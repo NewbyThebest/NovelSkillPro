@@ -14,7 +14,6 @@ REQUIRED_HEADINGS = [
     "## 1. 当前承接",
     "## 2. 近期情节流",
     "## 3. 下一步与阶段缺口",
-    "## 4. 里程碑日志",
 ]
 
 
@@ -140,13 +139,6 @@ def main() -> int:
         if expected_stage and actual_stage != expected_stage:
             errors.append(f"当前阶段应为“{expected_stage}”，实际为“{actual_stage or '缺失'}”")
 
-    milestone_text = section(progress, "## 4. 里程碑日志")
-    milestones = re.findall(r"^- \[已完成\]", milestone_text, re.M)
-    if len(milestones) > 10:
-        errors.append(f"里程碑超过10条，当前为{len(milestones)}条，应合并同类事件")
-    if re.search(r"^- \[已完成\].*第\d+章.*定稿", milestone_text, re.M):
-        errors.append("里程碑中存在逐章定稿记录")
-
     recent_numbers = re.findall(r"^- \*\*第(\d+)章\*\*", section(progress, "## 2. 近期情节流"), re.M)
     repeated = [number for number, count in Counter(recent_numbers).items() if count > 1]
     if repeated:
@@ -158,7 +150,7 @@ def main() -> int:
             print(f"- {error}")
         return 1
 
-    print("进度文件校验通过：当前章节、最近三章、阶段、待办和里程碑结构均符合要求。")
+    print("进度文件校验通过：当前章节、最近三章、阶段与待办结构均符合要求。")
     return 0
 
 

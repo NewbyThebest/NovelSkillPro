@@ -15,7 +15,6 @@ REQUIRED_HEADINGS = [
     "## 地点索引",
     "## 已确认连通关系",
     "## 空间限制与通行条件",
-    "## 未确认空间",
 ]
 
 
@@ -111,20 +110,13 @@ def main() -> int:
     if future_chapter_refs:
         errors.append(f"地图引用了尚未定稿章节：{sorted(set(future_chapter_refs))}")
 
-    if "只写定稿正文" not in text:
-        errors.append("维护边界中缺少只采用定稿正文的事实约束")
-    if "不得自行补" not in text:
-        errors.append("维护边界中缺少不得自行补全空间关系的约束")
-    if "人物当前" not in text or "角色状态" not in text:
-        errors.append("维护边界中缺少地图与人物动态位置的职责区分")
-
     if errors:
         print("地图校验失败：")
         for error in errors:
             print(f"- {error}")
         return 1
 
-    print("地图校验通过：事实截止、固定栏目、事实边界与未确认空间分层均符合要求。")
+    print("地图校验通过：事实截止、固定栏目与事实边界均符合要求。")
     return 0
 
 
