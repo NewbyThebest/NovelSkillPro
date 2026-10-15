@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate that the character-state dashboard stays current and non-historical."""
+"""Validate that the character-state dashboard holds only current snapshots."""
 
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ from pathlib import Path
 HEADING = re.compile(r"^## (.+?)\s*$", re.M)
 FIELD = re.compile(r"^- \*\*(.+?)\*\*：\s*(.*)$", re.M)
 CHAPTER_REFERENCE = re.compile(r"第\s*\d+\s*章")
-RECENT_BASIS = re.compile(r"^第\s*\d+\s*章。?$")
 
 
 def parse_args() -> argparse.Namespace:
@@ -83,26 +82,10 @@ def validate_text(text: str, main_roles: set[str] | None = None) -> list[str]:
         if duplicates:
             errors.append(f"角色“{role}”存在重复字段：{duplicates}")
 
-        basis_values = [value.strip() for name, value in fields if name.strip() == "最近更新依据"]
-        if len(basis_values) != 1:
-            errors.append(
-                f"角色“{role}”必须恰有一个“最近更新依据”，实际为{len(basis_values)}个"
-            )
-            continue
-
-        basis = basis_values[0]
-        if not RECENT_BASIS.fullmatch(basis):
-            errors.append(
-                f"角色“{role}”的“最近更新依据”只能填写一个章节号，实际为“{basis}”"
-            )
-
-        body_without_basis = re.sub(
-            r"^- \*\*最近更新依据\*\*：.*$", "", body, flags=re.M
-        )
-        references = CHAPTER_REFERENCE.findall(body_without_basis)
+        references = CHAPTER_REFERENCE.findall(body)
         if references:
             errors.append(
-                f"角色“{role}”的状态字段仍含章节号{references}，应改写为当前快照"
+                f"角色“{role}”的字段含章节号{references}，本文件只写当前快照，不写章节概念"
             )
 
     return errors
@@ -124,7 +107,7 @@ def main() -> int:
             print(f"- {error}")
         return 1
 
-    print("角色状态文件校验通过：角色条目、最近更新依据和当前快照结构均符合要求。")
+    print("角色状态文件校验通过：角色条目、字段结构与当前快照均符合要求。")
     return 0
 
 
