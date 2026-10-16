@@ -184,6 +184,15 @@ def main() -> int:
                 errors.append(
                     f"时间段“{label}”应只有一句话，实际为{len(lines)}行"
                 )
+            elif lines:
+                # 模板要求每个时间段一句话：按句末标点计，不按行数计。
+                sentences = [
+                    part for part in re.split(r"[。！？]", lines[0]) if part.strip()
+                ]
+                if len(sentences) > 1:
+                    errors.append(
+                        f"时间段“{label}”应只有一句话，实际为{len(sentences)}句"
+                    )
 
     future_chapter_refs = [
         int(number)

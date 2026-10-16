@@ -17,6 +17,14 @@ REQUIRED_HEADINGS = [
     "## 空间限制与通行条件",
 ]
 
+# 每张表的固定列数（不含首尾空列）。
+TABLE_COLUMNS = {
+    "区域索引": 3,
+    "地点索引": 3,
+    "已确认连通关系": 4,
+    "空间限制与通行条件": 2,
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -52,11 +60,76 @@ def latest_finalized_chapter(body_dir: Path) -> tuple[int, str] | None:
     return latest, chapters[latest][0]
 
 
-def chapter_references(text: str) -> set[int]:
-    references = {int(number) for number in re.findall(r"第(\d+)章", text)}
-    for start, end in re.findall(r"第(\d+)\s*(?:—|－|-|至)\s*(\d+)章", text):
-        references.update((int(start), int(end)))
-    return references
+def split_sections(text: str) -> dict[str, str]:
+    """Return {heading: body} for each level-2 heading."""
+    sections: dict[str, str] = {}
+    headings = list(re.finditer(r"^##\s+(.+?)\s*$", text, re.M))
+    for index, heading in enumerate(headings):
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
+        sections[heading.group(1).strip()] = text[heading.end():end]
+    return sections
+
+
+def table_rows(body: str) -> list[tuple[int, list[str]]]:
+    """Return (line number, cells) for data rows; table starts after header+separator."""
+    rows: list[tuple[int, list[str]]] = []
+    for offset, raw in enumerate(body.splitlines()):
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("|") and line.endswith("|"):
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            rows.append((offset, cells))
+    return rows
+
+
+def check_tables(body: str, columns: int, label: str) -> list[str]:
+    """Validate a markdown table: intact header, consistent column count."""
+    errors: list[str] = []
+    stripped = [line.strip() for line in body.splitlines()]
+    non_empty = [(i, line) for i, line in enumerate(stripped) if line]
+
+    if not non_empty:
+        errors.append(f"{label}表为空")
+        return errors
+
+    if not non_empty[0][1].startswith("|"):
+        errors.append(f"{label}表缺少表头行")
+        return errors
+
+    header_cells = [cell.strip() for cell in non_empty[0][1].strip("|").split("|")]
+
+    # 表头之后必须紧跟分隔行，否则渲染会出错。
+    if len(non_empty) < 2 or not re.fullmatch(r"\|[\s:|-]+\|", non_empty[1][1]):
+        errors.append(f"{label}表头后缺少分隔行（`| :--- |` 一行）")
+    if len(header_cells) != columns:
+        errors.append(f"{label}表头列数应为 {columns}，实际为 {len(header_cells)}")
+
+    # 数据行必须与表头列数一致；分隔行本身列数不参与比较。
+    for index, line in non_empty[1:]:
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if set("".join(cells)) <= set(":- "):
+            continue
+        if len(cells) != columns:
+            errors.append(
+                f"{label}表第 {index + 1} 行有 {len(cells)} 列，应为 {columns} 列"
+            )
+
+    # 表体中出现空行 = 表格被打断
+    start = next((i for i, line in enumerate(stripped) if line.startswith("|")), None)
+    if start is not None:
+        for index in range(start, len(stripped)):
+            if not stripped[index]:
+                following = [line for line in stripped[index + 1:] if line]
+                if following and following[0].startswith("|"):
+                    errors.append(
+                        f"{label}表在第 {index + 1} 行被空行断开，应合并为一张表"
+                    )
+                break
+
+    return errors
 
 
 def main() -> int:
@@ -105,10 +178,47 @@ def main() -> int:
             )
 
     future_chapter_refs = [
-        number for number in chapter_references(text) if number > latest_number
+        number for number in re.findall(r"第(\d+)章", text) if int(number) > latest_number
     ]
     if future_chapter_refs:
         errors.append(f"地图引用了尚未定稿章节：{sorted(set(future_chapter_refs))}")
+
+    sections = split_sections(text)
+
+    table_errors: list[str] = []
+    for name, columns in TABLE_COLUMNS.items():
+        body = sections.get(name)
+        if body is None:
+            continue
+        table_errors.extend(check_tables(body, columns, name))
+
+    errors.extend(table_errors)
+
+    # 区域索引与地点索引引用的上级区域都必须已经定义过。
+    defined_areas = set()
+    for _, cells in table_rows(sections.get("区域索引", "")):
+        if len(cells) >= 1 and cells[0] not in {"区域名称", "无"}:
+            defined_areas.add(cells[0])
+    if defined_areas:
+        unknown_parents: set[str] = set()
+        for _, cells in table_rows(sections.get("区域索引", "")):
+            if len(cells) >= 2 and cells[1] not in {"上级区域", "无"}:
+                if cells[1] not in defined_areas:
+                    unknown_parents.add(cells[1])
+        if unknown_parents:
+            errors.append(
+                f"区域索引的上级区域在区域索引中未定义：{sorted(unknown_parents)}"
+            )
+
+        unknown: set[str] = set()
+        for _, cells in table_rows(sections.get("地点索引", "")):
+            if len(cells) >= 2 and cells[1] not in {"所属区域", "无"}:
+                if cells[1] not in defined_areas:
+                    unknown.add(cells[1])
+        if unknown:
+            errors.append(
+                f"地点索引引用了区域索引中未定义的区域：{sorted(unknown)}"
+            )
 
     if errors:
         print("地图校验失败：")

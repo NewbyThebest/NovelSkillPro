@@ -119,8 +119,9 @@ def main() -> int:
     if not 1 <= recent_count <= 3:
         errors.append(f"近期行动应保留1至3项，实际为{recent_count}项")
 
+    # 缺口列表到下一个字段或分节末尾为止；不再依赖已废弃的“持续约束”。
     stage_gaps = re.search(
-        r"^- \*\*阶段完成缺口\*\*：\s*$([\s\S]*?)(?=^- \*\*持续约束\*\*：)",
+        r"^- \*\*阶段完成缺口\*\*：\s*$([\s\S]*?)(?=\n- \*\*|\n## |\Z)",
         next_section,
         re.M,
     )
