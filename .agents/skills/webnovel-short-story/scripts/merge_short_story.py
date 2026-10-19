@@ -112,7 +112,7 @@ def main() -> int:
         body = to_lf(read_text(path)).strip("\n")
         if not body:
             raise SystemExit(f"[停止] 章节正文为空：{path}")
-        blocks.append(f"{num:02d}\n{body}")
+        blocks.append(f"{num:02d}\n\n{body}")
     blocks.append("全文完")
 
     content = "\n\n".join(blocks) + "\n"
