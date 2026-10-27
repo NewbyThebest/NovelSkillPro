@@ -30,12 +30,18 @@ def find_violations(text: str) -> list[Violation]:
                 continue
 
             cursor = index + 1
+            has_closing_quote = False
             while cursor < len(line) and line[cursor] in CLOSING_MARKS:
+                if line[cursor] in '”"':
+                    has_closing_quote = True
                 cursor += 1
             while cursor < len(line) and line[cursor] in " \t":
                 cursor += 1
 
             if cursor < len(line):
+                # Allow post-quote or mid-quote speech/action tags after `。”` (e.g. “台词。”人物动作。)
+                if has_closing_quote and line[cursor] not in '“"':
+                    continue
                 violations.append(
                     Violation(
                         line_number=line_number,
@@ -72,11 +78,14 @@ def split_line_at_full_stops(line: str) -> list[str]:
             continue
 
         cursor = index + 1
+        has_closing_quote = False
         while cursor < len(line) and line[cursor] in CLOSING_MARKS:
             closing_mark = line[cursor]
             current.append(closing_mark)
             if closing_mark == "”":
                 in_chinese_quote = False
+            if closing_mark in '”"':
+                has_closing_quote = True
             cursor += 1
 
         next_text = cursor
@@ -86,6 +95,10 @@ def split_line_at_full_stops(line: str) -> list[str]:
         if next_text >= len(line):
             index = len(line)
             break
+
+        if has_closing_quote and line[next_text] not in '“"':
+            index = cursor
+            continue
 
         reopen_quote = in_chinese_quote
         if reopen_quote:
