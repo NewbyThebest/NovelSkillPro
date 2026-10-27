@@ -7,7 +7,7 @@ description: 以 `.agents/skills/` 为唯一源头，将技能镜像同步到 `.
 
 `.agents/skills/` 是唯一源头，`.claude/skills/` 和 `.codebuddy/skills/` 是镜像。所有技能修改只改 `.agents/skills/`，不要直接改镜像目录，否则下次同步会覆盖。
 
-项目文本规则统一维护在仓库根目录的 `AGENTS.md`，不再使用或同步任何 `rules/` 目录。
+正文的写法规则统一维护在 `2-设定/2.4_文风.md`。仓库根目录的 `AGENTS.md` 只放项目说明，不是规则文件，不由本脚本同步。
 
 本技能只同步技能目录；`.DS_Store`、`__pycache__/`、`*.pyc` 等本机缓存不属于镜像范围，也不会被同步过去。
 
