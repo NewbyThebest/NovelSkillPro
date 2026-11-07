@@ -143,11 +143,19 @@ def _resolve_host(host: str) -> tuple[bool, str]:
         return False, f"域名无法解析：{host}（请检查链接是否正确或站点是否可访问）"
     if not infos:
         return False, f"域名无法解析：{host}"
+    is_literal_ip = True
+    try:
+        ipaddress.ip_address(lowered)
+    except ValueError:
+        is_literal_ip = False
+    fake_ip_net = ipaddress.ip_network("198.18.0.0/15")
     for info in infos:
         addr = info[4][0]
         try:
             ip = ipaddress.ip_address(addr)
         except ValueError:
+            continue
+        if not is_literal_ip and ip in fake_ip_net:
             continue
         if (ip.is_private or ip.is_loopback or ip.is_link_local
                 or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
